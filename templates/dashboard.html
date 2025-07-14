@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tableau de bord – Salle de Contrôle</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', sans-serif;
+      color: #333;
+    }
+
+    .navbar {
+      background-color: #0d47a1 !important;
+    }
+
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.4rem;
+    }
+
+    .card-alert {
+      border-left: 5px solid #0d6efd;
+      background-color: #fff;
+    }
+
+    .status-Intervention { background-color: #28a745 !important; color: #fff; }
+    .status-Indisponible { background-color: #ffc107 !important; }
+    .status-Non\ réponse { background-color: #dc3545 !important; color: #fff; }
+
+    .btn {
+      transition: all 0.3s ease-in-out;
+    }
+
+    .btn:hover {
+      transform: scale(1.03);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .main {
+      background-color: #e0f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .main_local {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      background-color: #444;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .top, .bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .top > *, .bottom > * {
+      background-color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      border: 4px solid #444;
+      width: 120px;
+      height: 90px;
+      cursor: pointer;
+      border-radius: 8px;
+      user-select: none;
+      transition: background-color 0.3s;
+    }
+
+    .couloir {
+      width: 50px;
+      background-color: white;
+      margin: 6px 0;
+    }
+
+    .active {
+      animation: blink 1s infinite;
+      background-color: #B11226 !important;
+      color: white !important;
+    }
+
+    @keyframes blink {
+      0%, 100% { background-color: #B11226; }
+      50% { background-color: #ba5663; }
+    }
+
+    .legend-box {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #333;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .table th, .table td {
+      vertical-align: middle;
+    }
+
+    h3 {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <span class="navbar-brand text-white">🏥 Salle de Contrôle</span>
+
+    <div>
+      <a href="{{ url_for('alertes_detaillees') }}" class="btn btn-outline-light rounded-pill me-2" title="Voir toutes les alertes">
+        🔔
+      </a>
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-light rounded-pill">🔒 Déconnexion</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <!-- Bouton Ajouter Alerte -->
+  <div class="d-flex justify-content-end mb-3">
+    <a href="{{ url_for('ajouter_alerte') }}" class="btn btn-success">➕ Ajouter une Alerte</a>
+  </div>
+
+  <h3 class="mb-3">📋 Alertes Récentes</h3>
+  {% if alertes %}
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+      {% for alerte in alertes %}
+        <div class="col">
+          <div class="card card-alert shadow-sm p-3 status-{{ alerte.etat }}">
+            <h5>🛏️ Chambre {{ alerte.chambre }}</h5>
+            <p class="mb-1"><strong>État :</strong> {{ alerte.etat }}</p>
+            <p class="mb-1"><strong>Heure :</strong> {{ alerte.date_heure_fmt }}</p>
+            <p class="mb-2"><strong>Médecin :</strong> {{ alerte.medecin or "Inconnu" }}</p>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-success">🟢 Intervention</button>
+              <button class="btn btn-sm btn-warning">🟡 Indisponible</button>
+              <button class="btn btn-sm btn-danger">🔴 Non réponse</button>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">Aucune alerte reçue pour le moment.</div>
+  {% endif %}
+
+  <!-- Bloc hospitalier -->
+  <div class="d-flex align-items-center gap-2 mt-5 mb-3">
+    <span class="fs-4">🏥 Bloc Hospitalier</span>
+    <a href="{{ url_for('bloc') }}" class="btn btn-outline-secondary">👁️ Vue Bloc Hospitalier</a>
+  </div>
+
+  <div class="main">
+    <div class="main_local">
+      <div class="top">
+        <div id="local_1" class="local">Local 1</div>
+        <div id="local_2" class="local">Local 2</div>
+        <div id="local_3" class="local">Local 3</div>
+        <div id="local_4" class="local">Local 4</div>
+      </div>
+      <div class="couloir"></div>
+      <div class="bottom">
+        <div id="local_5" class="local">Local 5</div>
+        <div id="local_6" class="local">Local 6</div>
+        <div id="local_7" class="local">Local 7</div>
+        <div id="local_8" class="local">Local 8</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historique -->
+  <h3 class="mt-5">📚 Historique des Alertes
+    <a href="{{ url_for('historique') }}" class="btn btn-sm btn-primary ms-3">Voir tout</a>
+  </h3>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped">
+      <thead class="table-light">
+        <tr>
+          <th>Chambre</th>
+          <th>Date</th>
+          <th>Médecin</th>
+          <th>État</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for alerte in alertes %}
+          <tr>
+            <td>Chambre {{ alerte.chambre }}</td>
+            <td>{{ alerte.date_heure_fmt }}</td>
+            <td>{{ alerte.medecin or "Inconnu" }}</td>
+            <td>{{ alerte.etat }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Bloc JS -->
+<script>
+  function updateStatus() {
+    fetch('/status')
+      .then(res => res.json())
+      .then(data => {
+        for (let i = 1; i <= 8; i++) {
+          const el = document.getElementById('local_' + i);
+          if (data['local_' + i]) {
+            el.classList.add('active');
+            el.onclick = () => {
+              fetch('/led?id=' + i);
+              el.classList.remove('active');
+            };
+          } else {
+            el.classList.remove('active');
+            el.onclick = null;
+          }
+        }
+      });
+  }
+
+  setInterval(updateStatus, 1000);
+  updateStatus();
+</script>
+
+</body>
+</html>

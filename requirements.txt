@@ -1,0 +1,6 @@
+flask
+python-dotenv
+supabase
+paho-mqtt
+# Optional dependencies
+# Uncomment the following lines if you need these features
